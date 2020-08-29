@@ -16,6 +16,8 @@ import { APP_PIPE, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
 import { LoggerInterceptor } from './core/interceptors/logger.interceptor';
 import { HttpExceptionFilter } from './core/filters/http-exception.filter';
 import { LoggerMiddleware } from './core/middlewares/logger.middleware';
+import { MailModule } from './mail/mail.module';
+import { UserModule } from './user/user.module';
 import appConfig from './app.config';
 
 @Module({
@@ -36,6 +38,8 @@ import appConfig from './app.config';
       inject: [ConfigService],
     }),
     AuthModule,
+    MailModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [

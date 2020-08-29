@@ -3,10 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { RegisterDto } from './dtos/register.dto';
+import { UserDto } from 'src/user/dtos/user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(@InjectModel(User.name) private userModel: Model<User>) { }
 
   public findByUsername(username: string): Promise<User> {
     return this.userModel.findOne({ username }).exec();
@@ -18,5 +19,14 @@ export class UserService {
     });
 
     return user.save();
+  }
+
+  public activateUser(user: User): void {
+    user.isActive = true;
+    user.save();
+  }
+
+  public findAll(): Promise<UserDto[]> {
+    return this.userModel.find().exec();
   }
 }

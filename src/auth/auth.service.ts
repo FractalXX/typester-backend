@@ -7,14 +7,21 @@ import { User } from './schemas/user.schema';
 import { TokenDto } from './dtos/token.dto';
 import { RegisterDto } from './dtos/register.dto';
 import * as bcrypt from 'bcrypt';
+import * as moment from 'moment';
+import { TokenService } from './token.service';
+import { ActivationResult } from './enums/activation-result.enum';
+import { TokenType } from './enums/token-type.enum';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
+    private tokenService: TokenService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+    private mailerService: MailerService,
+  ) { }
 
   @Log()
   public async getUserByCredentials(
@@ -30,7 +37,7 @@ export class AuthService {
   }
 
   @Log()
-  public login(user: User): TokenDto {
+  public getToken(user: User): TokenDto {
     return {
       token: this.jwtService.sign({
         username: user.username,
@@ -50,9 +57,46 @@ export class AuthService {
       this.configService.get<number>('auth.passwordSaltRounds'),
     );
     const hashedPassword = await bcrypt.hash(registerDto.password, salt);
-    return !!this.userService.addUser({
+    // FIXME save might fail in certain circumstances, should handle it
+    const result = await this.userService.addUser({
       ...registerDto,
       password: hashedPassword,
     });
+
+    if (result) {
+      const token = await this.tokenService.issueToken(
+        result._id,
+        TokenType.ACTIVATION,
+        moment().add(this.configService.get<number>('auth.activationTokenExpiration'), 'day').toDate(),
+      );
+
+      // TODO create email template
+      this.mailerService.sendMail({
+        to: registerDto.email,
+        subject: 'Confirm registration',
+        template: 'registration',
+        context: {
+          // TODO shorten
+          activationUrl: `http://${this.configService.get('frontend.url')}/${this.configService.get('frontend.activationRoute')}/${token.value}`,
+          name: registerDto.username,
+        },
+      });
+    }
+
+    return !!result;
+  }
+
+  @Log()
+  public async activate(tokenValue: string): Promise<ActivationResult> {
+    const token = await this.tokenService.findByValueAndType(tokenValue, TokenType.ACTIVATION);
+    if (!token) {
+      return ActivationResult.TOKEN_NOT_FOUND;
+    } else if (token.expirationDate < new Date()) {
+      return ActivationResult.TOKEN_EXPIRED;
+    }
+
+    this.userService.activateUser(token.user);
+    this.tokenService.removeToken(token);
+    return ActivationResult.SUCCESSFUL;
   }
 }

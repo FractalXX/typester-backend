@@ -9,12 +9,19 @@ import { LocalStrategy } from './passport/local.strategy';
 import { JwtStrategy } from './passport/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { UserService } from './user.service';
+import { MailModule } from 'src/mail/mail.module';
+import { TokenService } from './token.service';
+import { Token, TokenSchema } from './schemas/token.schema';
 
 @Module({
   imports: [
     ConfigModule,
     PassportModule,
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MailModule,
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: Token.name, schema: TokenSchema },
+    ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -26,7 +33,8 @@ import { UserService } from './user.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [UserService, AuthService, LocalStrategy, JwtStrategy],
+  // TODO move UserService to user module
+  providers: [UserService, AuthService, TokenService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
 })
-export class AuthModule {}
+export class AuthModule { }
