@@ -1,4 +1,4 @@
-export default () => {
+export default (): any => {
   const {
     PORT,
     DATABASE_HOST,
@@ -20,8 +20,8 @@ export default () => {
     },
     auth: {
       tokenExpirationSeconds: TOKEN_EXPIRATION_SECONDS,
-      passwordSaltRounds: PASSWORD_SALT_ROUNDS,
+      passwordSaltRounds: parseInt(PASSWORD_SALT_ROUNDS, 10),
       jwtSecretKey: JWT_SECRET_KEY,
     },
-  }
+  };
 };

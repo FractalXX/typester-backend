@@ -1,18 +1,26 @@
-import { Module, NestModule, MiddlewareConsumer, RequestMethod, Logger, ValidationPipe } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { CoreModule } from './core/core.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
-import { SharedModule } from './shared/shared.module';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
+import {
+  Logger,
+  ValidationPipe,
+  NestModule,
+  MiddlewareConsumer,
+  RequestMethod,
+  Module,
+} from '@nestjs/common';
+import { APP_PIPE, APP_INTERCEPTOR, APP_FILTER } from '@nestjs/core';
+import { LoggerInterceptor } from './core/interceptors/logger.interceptor';
+import { HttpExceptionFilter } from './core/filters/http-exception.filter';
+import { LoggerMiddleware } from './core/middlewares/logger.middleware';
 import appConfig from './app.config';
-import { LoggerMiddleware } from './shared/middlewares/logger.middleware';
-import { APP_INTERCEPTOR, APP_FILTER, APP_PIPE } from '@nestjs/core';
-import { LoggerInterceptor } from './shared/interceptors/logger.interceptor';
-import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
 
 @Module({
   imports: [
+    CoreModule,
     ConfigModule.forRoot({
       load: [appConfig],
     }),
@@ -21,11 +29,12 @@ import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
       useFactory: async (configService: ConfigService) => ({
         user: configService.get('database.user'),
         pass: configService.get('database.password'),
-        uri: `mongodb+srv://${configService.get('database.host')}/${configService.get('database.name')}`,
+        uri: `mongodb+srv://${configService.get(
+          'database.host',
+        )}/${configService.get('database.name')}`,
       }),
       inject: [ConfigService],
     }),
-    SharedModule,
     AuthModule,
   ],
   controllers: [AppController],
@@ -47,11 +56,10 @@ import { HttpExceptionFilter } from './shared/filters/http-exception.filter';
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(LoggerMiddleware)
-      .forRoutes({
-        path: '*', method: RequestMethod.ALL,
-      });
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(LoggerMiddleware).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
   }
 }

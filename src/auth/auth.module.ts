@@ -1,24 +1,20 @@
 import { Module } from '@nestjs/common';
-import { AuthService } from './services/auth.service';
-import { UserService } from './services/user.service';
 import { PassportModule } from '@nestjs/passport';
-import { SharedModule } from 'src/shared/shared.module';
-import { LocalStrategy } from './strategies/local.strategy';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
 import { JwtModule } from '@nestjs/jwt';
-import { AuthController } from './controllers/auth.controller';
-import { JwtStrategy } from './strategies/jwt.strategy';
 import { ConfigService, ConfigModule } from '@nestjs/config';
+import { AuthService } from './auth.service';
+import { LocalStrategy } from './passport/local.strategy';
+import { JwtStrategy } from './passport/jwt.strategy';
+import { AuthController } from './auth.controller';
+import { UserService } from './user.service';
 
 @Module({
   imports: [
     ConfigModule,
     PassportModule,
-    SharedModule,
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-    ]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -30,7 +26,7 @@ import { ConfigService, ConfigModule } from '@nestjs/config';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, UserService, LocalStrategy, JwtStrategy],
+  providers: [UserService, AuthService, LocalStrategy, JwtStrategy],
   controllers: [AuthController],
 })
-export class AuthModule { }
+export class AuthModule {}

@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from './user.service';
-import { bcrypt } from 'src/shared/shared.module';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../schemas/user.schema';
-import { RegisterDto } from 'dtos/auth/register.dto';
 import { ConfigService } from '@nestjs/config';
-import { Log } from 'src/shared/decorators/log-method.decorator';
+import { Log } from 'src/core/decorators/log-method.decorator';
+import { User } from './schemas/user.schema';
+import { TokenDto } from './dtos/token.dto';
+import { RegisterDto } from './dtos/register.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -13,10 +14,13 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) { }
+  ) {}
 
   @Log()
-  public async getUserByCredentials(username: string, password: string): Promise<any> {
+  public async getUserByCredentials(
+    username: string,
+    password: string,
+  ): Promise<any> {
     const user = await this.userService.findByUsername(username);
     if (user && bcrypt.compare(password, user.password)) {
       return user;
@@ -26,13 +30,13 @@ export class AuthService {
   }
 
   @Log()
-  public login(user: User): any {
+  public login(user: User): TokenDto {
     return {
       token: this.jwtService.sign({
         username: user.username,
         sub: user.id,
       }),
-    }
+    };
   }
 
   @Log()
@@ -42,8 +46,13 @@ export class AuthService {
       return false;
     }
 
-    const salt = await bcrypt.genSalt(this.configService.get<number>('auth.passwordSaltRounds'));
+    const salt = await bcrypt.genSalt(
+      this.configService.get<number>('auth.passwordSaltRounds'),
+    );
     const hashedPassword = await bcrypt.hash(registerDto.password, salt);
-    return !!this.userService.addUser({ ...registerDto, password: hashedPassword });
+    return !!this.userService.addUser({
+      ...registerDto,
+      password: hashedPassword,
+    });
   }
 }
