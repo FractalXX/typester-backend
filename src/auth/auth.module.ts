@@ -35,6 +35,7 @@ import { Token, TokenSchema } from './schemas/token.schema';
   ],
   // TODO move UserService to user module
   providers: [UserService, AuthService, TokenService, LocalStrategy, JwtStrategy],
+  exports: [UserService],
   controllers: [AuthController],
 })
 export class AuthModule { }
