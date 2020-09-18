@@ -3,6 +3,9 @@ import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UserService } from 'src/auth/user.service';
 import { UserDto } from './dtos/user.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/auth/decorators/roles.decorator';
+import { Role } from 'src/auth/enums/role.enum';
 
 @ApiTags('user')
 @Controller('user')
@@ -21,8 +24,9 @@ export class UserController {
     status: HttpStatus.FORBIDDEN,
     description: 'Forbidden (non-admin users)'
   })
-  @UseGuards(JwtAuthGuard)
-  // TODO add pagination and role check
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  // TODO add pagination
   public getAllUsers(): Promise<UserDto[]> {
     return this.userService.findAll();
   }

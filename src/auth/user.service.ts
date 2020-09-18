@@ -4,6 +4,9 @@ import { User } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { RegisterDto } from './dtos/register.dto';
 import { UserDto } from 'src/user/dtos/user.dto';
+import { Role } from './enums/role.enum';
+import { Observable, from } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class UserService {
@@ -28,5 +31,17 @@ export class UserService {
 
   public findAll(): Promise<UserDto[]> {
     return this.userModel.find().exec();
+  }
+
+  public hasRoles(userId: string, roles: Role[]): Observable<boolean> {
+    return from(
+      this.userModel.findOne({
+        _id: userId,
+      })
+        .select('roles')
+        .exec(),
+    ).pipe(
+      map(result => roles.every(role => result.roles.includes(role))),
+    );
   }
 }

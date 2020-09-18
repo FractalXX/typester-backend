@@ -29,7 +29,7 @@ export class AuthService {
     password: string,
   ): Promise<any> {
     const user = await this.userService.findByUsername(username);
-    if (user && bcrypt.compare(password, user.password)) {
+    if (user && await bcrypt.compare(password, user.password)) {
       return user;
     }
 

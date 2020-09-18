@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Role } from '../enums/role.enum';
 
 /**
  * Basic User schema used for authentication.
@@ -17,6 +18,9 @@ export class User extends Document {
 
   @Prop({ required: true, default: false })
   isActive: boolean;
+
+  @Prop({ required: true, default: [Role.USER] })
+  roles: Role[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
