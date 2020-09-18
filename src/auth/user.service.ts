@@ -7,6 +7,7 @@ import { UserDto } from 'src/user/dtos/user.dto';
 import { Role } from './enums/role.enum';
 import { Observable, from } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { UserQueryParams } from './dtos/user-query-params';
 
 @Injectable()
 export class UserService {
@@ -27,6 +28,14 @@ export class UserService {
   public activateUser(user: User): void {
     user.isActive = true;
     user.save();
+  }
+
+  public query(queryParams: UserQueryParams): Promise<User[]> {
+    return this.userModel
+      .find()
+      .skip(queryParams.offset)
+      .limit(queryParams.limit)
+      .exec();
   }
 
   public findAll(): Promise<UserDto[]> {

@@ -47,7 +47,7 @@ import appConfig from './app.config';
     Logger,
     {
       provide: APP_PIPE,
-      useClass: ValidationPipe,
+      useFactory: () => new ValidationPipe({ transform: true }),
     },
     {
       provide: APP_INTERCEPTOR,
