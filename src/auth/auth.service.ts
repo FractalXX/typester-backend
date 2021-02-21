@@ -21,7 +21,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private mailerService: MailerService,
-  ) { }
+  ) {}
 
   @Log()
   public async getUserByCredentials(
@@ -29,7 +29,7 @@ export class AuthService {
     password: string,
   ): Promise<any> {
     const user = await this.userService.findByUsername(username);
-    if (user && await bcrypt.compare(password, user.password)) {
+    if (user && (await bcrypt.compare(password, user.password))) {
       return user;
     }
 
@@ -46,7 +46,6 @@ export class AuthService {
     };
   }
 
-  @Log()
   public async register(registerDto: RegisterDto): Promise<boolean> {
     const user = await this.userService.findByUsername(registerDto.username);
     if (user) {
@@ -67,7 +66,12 @@ export class AuthService {
       const token = await this.tokenService.issueToken(
         result._id,
         TokenType.ACTIVATION,
-        moment().add(this.configService.get<number>('auth.activationTokenExpiration'), 'day').toDate(),
+        moment()
+          .add(
+            this.configService.get<number>('auth.activationTokenExpiration'),
+            'day',
+          )
+          .toDate(),
       );
 
       // TODO create email template
@@ -77,7 +81,11 @@ export class AuthService {
         template: 'registration',
         context: {
           // TODO shorten
-          activationUrl: `http://${this.configService.get('frontend.url')}/${this.configService.get('frontend.activationRoute')}/${token.value}`,
+          activationUrl: `http://${this.configService.get(
+            'frontend.url',
+          )}/${this.configService.get('frontend.activationRoute')}/${
+            token.value
+          }`,
           name: registerDto.username,
         },
       });
@@ -88,7 +96,10 @@ export class AuthService {
 
   @Log()
   public async activate(tokenValue: string): Promise<ActivationResult> {
-    const token = await this.tokenService.findByValueAndType(tokenValue, TokenType.ACTIVATION);
+    const token = await this.tokenService.findByValueAndType(
+      tokenValue,
+      TokenType.ACTIVATION,
+    );
     if (!token) {
       return ActivationResult.TOKEN_NOT_FOUND;
     } else if (token.expirationDate < new Date()) {

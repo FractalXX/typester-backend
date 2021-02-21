@@ -7,16 +7,19 @@ import { UserDto } from 'src/user/dtos/user.dto';
 import { Role } from './enums/role.enum';
 import { Observable, from } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { UserQueryParams } from './dtos/user-query-params';
+import { UserQueryParams } from '../user/dtos/user-query-params';
+import { Log } from 'src/core/decorators/log-method.decorator';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) { }
+  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
 
+  @Log()
   public findByUsername(username: string): Promise<User> {
     return this.userModel.findOne({ username }).exec();
   }
 
+  @Log()
   public async addUser(registerDto: RegisterDto): Promise<User> {
     const user = new this.userModel({
       ...registerDto,
@@ -30,6 +33,7 @@ export class UserService {
     user.save();
   }
 
+  @Log()
   public query(queryParams: UserQueryParams): Promise<User[]> {
     return this.userModel
       .find()
@@ -38,19 +42,20 @@ export class UserService {
       .exec();
   }
 
+  @Log()
   public findAll(): Promise<UserDto[]> {
     return this.userModel.find().exec();
   }
 
+  @Log()
   public hasRoles(userId: string, roles: Role[]): Observable<boolean> {
     return from(
-      this.userModel.findOne({
-        _id: userId,
-      })
+      this.userModel
+        .findOne({
+          _id: userId,
+        })
         .select('roles')
         .exec(),
-    ).pipe(
-      map(result => roles.every(role => result.roles.includes(role))),
-    );
+    ).pipe(map(result => roles.every(role => result.roles.includes(role))));
   }
 }

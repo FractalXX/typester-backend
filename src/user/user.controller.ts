@@ -6,12 +6,12 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { Role } from 'src/auth/enums/role.enum';
-import { UserQueryParams } from 'src/auth/dtos/user-query-params';
+import { UserQueryParams } from 'src/user/dtos/user-query-params';
 
 @ApiTags('user')
 @Controller('user')
 export class UserController {
-  constructor(private userService: UserService) { }
+  constructor(private userService: UserService) {}
 
   @Get()
   @ApiOperation({
@@ -19,17 +19,17 @@ export class UserController {
   })
   @ApiResponse({
     status: HttpStatus.OK,
-    description: 'Successful request.'
+    description: 'Successful request.',
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'Forbidden (non-admin users)'
+    description: 'Forbidden (non-admin users)',
   })
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  // TODO add pagination
-  public getAllUsers(@Query() queryParams: UserQueryParams): Promise<UserDto[]> {
-    console.log(queryParams);
+  public getAllUsers(
+    @Query() queryParams: UserQueryParams,
+  ): Promise<UserDto[]> {
     return this.userService.query(queryParams);
   }
 }
