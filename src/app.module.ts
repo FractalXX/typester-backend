@@ -18,6 +18,7 @@ import { HttpExceptionFilter } from './core/filters/http-exception.filter';
 import { LoggerMiddleware } from './core/middlewares/logger.middleware';
 import { MailModule } from './mail/mail.module';
 import { UserModule } from './user/user.module';
+import { ProfileModule } from './profile/profile.module';
 import appConfig from './app.config';
 
 @Module({
@@ -31,7 +32,7 @@ import appConfig from './app.config';
       useFactory: async (configService: ConfigService) => ({
         user: configService.get('database.user'),
         pass: configService.get('database.password'),
-        uri: `mongodb+srv://${configService.get(
+        uri: `mongodb://${configService.get(
           'database.host',
         )}/${configService.get('database.name')}`,
       }),
@@ -40,6 +41,7 @@ import appConfig from './app.config';
     AuthModule,
     MailModule,
     UserModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [

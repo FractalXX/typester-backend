@@ -13,6 +13,7 @@ import { ConfigService, ConfigModule } from '@nestjs/config';
         const domain = configService.get('mailer.domain');
         const password = configService.get('mailer.password');
         const from = configService.get('mailer.from');
+
         return {
           transport: `smtps://${user}@${domain}:${password}@smtp.${domain}`,
           defaults: {
@@ -31,8 +32,8 @@ import { ConfigService, ConfigModule } from '@nestjs/config';
               options: {
                 strict: true,
               },
-            }
-          }
+            },
+          },
         };
       },
       inject: [ConfigService],
@@ -40,4 +41,4 @@ import { ConfigService, ConfigModule } from '@nestjs/config';
   ],
   exports: [MailerModule],
 })
-export class MailModule { }
+export class MailModule {}

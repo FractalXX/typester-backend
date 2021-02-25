@@ -13,6 +13,7 @@ export class LoggerMiddleware implements NestMiddleware {
       `Headers: ${JSON.stringify(request.headers)}`,
       this.context,
     );
+    // TODO disable logging for sensitive data
     this.logger.log(`Payload: ${JSON.stringify(request.body)}`, this.context);
     next();
   }

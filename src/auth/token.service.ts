@@ -3,9 +3,9 @@ import { Token } from './schemas/token.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import { toObjectId } from 'src/utils';
+import { toObjectId } from 'utils';
 import { TokenType } from './enums/token-type.enum';
-import { Log } from 'src/core/decorators/log-method.decorator';
+import { Log } from 'core/decorators/log-method.decorator';
 
 @Injectable()
 export class TokenService {
@@ -44,6 +44,17 @@ export class TokenService {
     return this.tokenModel
       .findOne({
         type,
+        user: toObjectId(userId),
+      })
+      .exec();
+  }
+
+  @Log()
+  public findActivationToken(userId: string, value: string): Promise<Token> {
+    return this.tokenModel
+      .findOne({
+        value,
+        type: TokenType.ACTIVATION,
         user: toObjectId(userId),
       })
       .exec();

@@ -1,3 +1,3 @@
-import { ListQueryParams } from 'src/common';
+import { ListQueryParams } from 'common';
 
 export class UserQueryParams extends ListQueryParams(50) {}
